@@ -29,7 +29,7 @@ import getAllReviews from './customHooks/getAllReviews'
 // Correct Import
 import ResumeAnalyzer from "./pages/ResumeAnalyzer"; 
 
-export const serverUrl = "http://localhost:8000"
+export const serverUrl = "https://skillvault-backend-s1e0.onrender.com"
 
 function App() {
   
