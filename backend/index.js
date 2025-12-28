@@ -12,7 +12,7 @@ import reviewRouter from "./routes/reviewRoute.js"
 import resumeRoutes from './routes/resumeRoutes.js';
 
 
-let port = process.env.PORT
+let port = process.env.PORT || 10000
 let app = express()
 app.use(express.json())
 app.use(cookieParser())
