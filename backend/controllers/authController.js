@@ -41,9 +41,9 @@ export const signUp=async (req,res)=>{
         return res.status(201).json(user)
 
     } catch (error) {
-        console.log("signUp error")
-        return res.status(500).json({message:`signUp Error ${error}`})
-    }
+    console.log("SIGNUP_SERVER_ERROR:", error.message);
+    res.status(500).json({ success: false, message: error.message });
+}
 }
 
 export const login=async(req,res)=>{
