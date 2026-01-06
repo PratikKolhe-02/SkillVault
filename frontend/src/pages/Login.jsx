@@ -4,7 +4,6 @@ import google from '../assets/google.jpg'
 import axios from 'axios'
 import { serverUrl } from '../App'
 import { MdOutlineRemoveRedEye } from "react-icons/md";
-
 import { MdRemoveRedEye } from "react-icons/md";
 import { useNavigate } from 'react-router-dom'
 import { signInWithPopup } from 'firebase/auth'
@@ -19,12 +18,16 @@ function Login() {
     const [password,setPassword]= useState("")
     const navigate = useNavigate()
     let [show,setShow] = useState(false)
-     const [loading,setLoading]= useState(false)
-     let dispatch = useDispatch()
+    const [loading,setLoading]= useState(false)
+    let dispatch = useDispatch()
+
     const handleLogin = async () => {
         setLoading(true)
         try {
             const result = await axios.post(serverUrl + "/api/auth/login" , {email , password} ,{withCredentials:true})
+            
+            localStorage.setItem("token", result.data.token)
+            
             dispatch(setUserData(result.data))
             navigate("/")
             setLoading(false)
@@ -34,9 +37,9 @@ function Login() {
             setLoading(false)
             toast.error(error.response.data.message)
         }
-        
     }
-     const googleLogin = async () => {
+
+    const googleLogin = async () => {
             try {
                 const response = await signInWithPopup(auth,provider)
                 
@@ -45,19 +48,21 @@ function Login() {
                 let email=user.email
                 let role=""
                 
-                
                 const result = await axios.post(serverUrl + "/api/auth/googlesignup" , {name , email , role}
                     , {withCredentials:true}
                 )
+
+                localStorage.setItem("token", result.data.token)
+
                 dispatch(setUserData(result.data))
                 navigate("/")
                 toast.success("Login Successfully")
             } catch (error) {
                 console.log(error)
-                toast.error(error.response.data.message)
+                toast.error(error.response?.data?.message || "Google Login Failed")
             }
-            
         }
+
   return (
     <div className='bg-[#dddbdb] w-[100vw] h-[100vh] flex items-center justify-center flex-col gap-3'>
             <form className='w-[90%] md:w-200 h-150 bg-[white] shadow-xl rounded-2xl flex' onSubmit={(e)=>e.preventDefault()}>
@@ -79,7 +84,7 @@ function Login() {
                         {!show && <MdOutlineRemoveRedEye className='absolute w-[20px] h-[20px] cursor-pointer right-[5%] bottom-[10%]' onClick={()=>setShow(prev => !prev)}/>}
                         {show && <MdRemoveRedEye className='absolute w-[20px] h-[20px] cursor-pointer right-[5%] bottom-[10%]' onClick={()=>setShow(prev => !prev)} />}
                     </div>
-                     
+                      
                     <button className='w-[80%] h-[40px] bg-black text-white cursor-pointer flex items-center justify-center rounded-[5px]' disabled={loading} onClick={handleLogin}>{loading?<ClipLoader size={30} color='white' /> : "Login"}</button>
                     <span className='text-[13px] cursor-pointer text-[#585757]' onClick={()=>navigate("/forgotpassword")}>Forget your password?</span>
     
