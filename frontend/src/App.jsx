@@ -16,7 +16,6 @@ import AddCourses from './pages/admin/AddCourses'
 import CreateCourse from './pages/admin/CreateCourse'
 import CreateLecture from './pages/admin/CreateLecture'
 import EditLecture from './pages/admin/EditLecture'
-
 import getCouseData from './customHooks/getCouseData'
 import ViewCourse from './pages/ViewCourse'
 import ScrollToTop from './components/ScrollToTop'
@@ -25,7 +24,6 @@ import EnrolledCourse from './pages/EnrolledCourse'
 import ViewLecture from './pages/ViewLecture'
 import SearchWithAi from './pages/SearchWithAi'
 import getAllReviews from './customHooks/getAllReviews'
-
 import ResumeAnalyzer from "./pages/ResumeAnalyzer"; 
 
 export const serverUrl = "https://skillvault-backend-s1e0.onrender.com"
@@ -38,22 +36,17 @@ function App() {
   getCreatorCourseData()
   getAllReviews()
 
-  const [initialLoading, setInitialLoading] = useState(!!localStorage.getItem('token'))
+  const [isLoading, setIsLoading] = useState(!!localStorage.getItem('token'))
 
   useEffect(() => {
     if (userData) {
-      setInitialLoading(false)
+      setIsLoading(false)
+    } else if (!localStorage.getItem('token')) {
+      setIsLoading(false)
     }
   }, [userData])
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setInitialLoading(false)
-    }, 2000)
-    return () => clearTimeout(timer)
-  }, [])
-
-  if (initialLoading && !userData) {
+  if (isLoading) {
     return (
       <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <h2>Loading...</h2>

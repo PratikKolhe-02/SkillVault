@@ -11,26 +11,20 @@ import { FaLock, FaPlayCircle } from "react-icons/fa";
 import { toast } from 'react-toastify';
 import { FaStar } from "react-icons/fa6";
 
-
 function ViewCourse() {
-
-      const { courseId } = useParams();
-      const navigate = useNavigate()
-    const {courseData} = useSelector(state=>state.course)
-    const {userData} = useSelector(state=>state.user)
-    const [creatorData , setCreatorData] = useState(null)
-    const dispatch = useDispatch()
-    const [selectedLecture, setSelectedLecture] = useState(null);
-    const {lectureData} = useSelector(state=>state.lecture)
-    const {selectedCourseData} = useSelector(state=>state.course)
+  const { courseId } = useParams();
+  const navigate = useNavigate()
+  const {courseData} = useSelector(state=>state.course)
+  const {userData} = useSelector(state=>state.user)
+  const [creatorData , setCreatorData] = useState(null)
+  const dispatch = useDispatch()
+  const [selectedLecture, setSelectedLecture] = useState(null);
+  const {lectureData} = useSelector(state=>state.lecture)
+  const {selectedCourseData} = useSelector(state=>state.course)
   const [selectedCreatorCourse,setSelectedCreatorCourse] = useState([])
-   const [isEnrolled, setIsEnrolled] = useState(false);
-   const [rating, setRating] = useState(0);
-   const [comment, setComment] = useState("");
-   
-   
-  
-
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
 
   const handleReview = async () => {
     try {
@@ -45,52 +39,44 @@ function ViewCourse() {
       toast.error(error.response.data.message)
     }
   }
-  
 
   const calculateAverageRating = (reviews) => {
-  if (!reviews || reviews.length === 0) return 0;
+    if (!reviews || reviews.length === 0) return 0;
 
-  const total = reviews.reduce((sum, review) => sum + review.rating, 0);
-  return (total / reviews.length).toFixed(1); // rounded to 1 decimal
-};
+    const total = reviews.reduce((sum, review) => sum + review.rating, 0);
+    return (total / reviews.length).toFixed(1); 
+  };
 
-// Usage:
-const avgRating = calculateAverageRating(selectedCourseData?.reviews);
-console.log("Average Rating:", avgRating);
-
-  
+  const avgRating = calculateAverageRating(selectedCourseData?.reviews);
+  console.log("Average Rating:", avgRating);
 
   const fetchCourseData = async () => {
     courseData.map((item) => {
       if (item._id === courseId) {
       dispatch(setSelectedCourseData(item))
         console.log(selectedCourseData)
-      
-
         return null;
       }
-
     })
-
   }
-    const checkEnrollment = () => {
-  const verify = userData?.enrolledCourses?.some(c => {
-    const enrolledId = typeof c === 'string' ? c : c._id;
-    return enrolledId?.toString() === courseId?.toString();
-  });
 
-  console.log("Enrollment verified:", verify);
-  if (verify) {
-    setIsEnrolled(true);
-  }
-};
+  const checkEnrollment = () => {
+    const verify = userData?.enrolledCourses?.some(c => {
+      const enrolledId = typeof c === 'string' ? c : c._id;
+      return enrolledId?.toString() === courseId?.toString();
+    });
+
+    console.log("Enrollment verified:", verify);
+    if (verify) {
+      setIsEnrolled(true);
+    }
+  };
+
   useEffect(() => {
     fetchCourseData()
     checkEnrollment()
   }, [courseId,courseData,lectureData])
 
-
-    // Fetch creator info once course data is available
   useEffect(() => {
     const getCreator = async () => {
       if (selectedCourseData?.creator) {
@@ -107,81 +93,69 @@ console.log("Average Rating:", avgRating);
         }
       }
     };
-
     getCreator();
-
-    
   }, [selectedCourseData]);
 
-
-   
-
-
   useEffect(() => {
-  if (creatorData?._id && courseData.length > 0) {
-    const creatorCourses = courseData.filter(
-      (course) =>
-        course.creator === creatorData._id && course._id !== courseId // Exclude current course
-    );
-    setSelectedCreatorCourse(creatorCourses);
-  
-  }
-}, [creatorData, courseData]);
+    if (creatorData?._id && courseData.length > 0) {
+      const creatorCourses = courseData.filter(
+        (course) =>
+          course.creator === creatorData._id && course._id !== courseId 
+      );
+      setSelectedCreatorCourse(creatorCourses);
+    }
+  }, [creatorData, courseData]);
 
- 
-const handleEnroll = async (courseId, userId) => {
-  try {
-    // 1. Create Order
-    const orderData = await axios.post(serverUrl + "/api/payment/create-order", {
-      courseId,
-      userId
-    } , {withCredentials:true});
-    console.log(orderData)
+  const handleEnroll = async (courseId, userId) => {
+    try {
+      const orderData = await axios.post(serverUrl + "/api/payment/create-order", {
+        courseId,
+        userId
+      } , {withCredentials:true});
+      console.log(orderData)
 
-    const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID, // from .env
-      amount: orderData.data.amount,
-      currency: "INR",
-      name: "SkillVault",
-      description: "Course Enrollment Payment",
-      order_id: orderData.data.id,
-      handler: async function (response) {
-  console.log("Razorpay Response:", response);
-  try {
-    const verifyRes = await axios.post(serverUrl + "/api/payment/verify-payment",{
-  ...response,       
-  courseId,
-  userId
-}, { withCredentials: true });
-    
-setIsEnrolled(true)
-    toast.success(verifyRes.data.message);
-  } catch (verifyError) {
-    toast.error("Payment verification failed.");
-    console.error("Verification Error:", verifyError);
-  }
-  },
-    };
-    
-    const rzp = new window.Razorpay(options)
-    rzp.open()
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID, 
+        amount: orderData.data.amount,
+        currency: "INR",
+        name: "SkillVault",
+        description: "Course Enrollment Payment",
+        order_id: orderData.data.id,
+        handler: async function (response) {
+          console.log("Razorpay Response:", response);
+          try {
+            const verifyRes = await axios.post(serverUrl + "/api/payment/verify-payment",{
+              ...response,       
+              courseId,
+              userId
+            }, { withCredentials: true });
+            
+            setIsEnrolled(true)
+            toast.success(verifyRes.data.message);
+          } catch (verifyError) {
+            toast.error("Payment verification failed.");
+            console.error("Verification Error:", verifyError);
+          }
+        },
+      };
+      
+      const rzp = new window.Razorpay(options)
+      rzp.open()
 
-  } catch (err) {
-    toast.error("Something went wrong while enrolling.");
-    console.error("Enroll Error:", err);
-  }
-};
+    } catch (err) {
+      toast.error("Something went wrong while enrolling.");
+      console.error("Enroll Error:", err);
+    }
+  };
 
   return (
-     <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto bg-white shadow-md rounded-xl p-6 space-y-6 relative">
 
-        {/* Top Section */}
         <div className="flex flex-col md:flex-row gap-6 ">
              
-          {/* Thumbnail */}
           <div className="w-full md:w-1/2">
-             <FaArrowLeftLong  className='text-[black] w-[22px] h-[22px] cursor-pointer' onClick={()=>navigate("/")}/>
+             <FaArrowLeftLong  className='text-[black] w-[22px] h-[22px] cursor-pointer' onClick={()=>navigate(-1)}/>
             {selectedCourseData?.thumbnail ? <img
               src={selectedCourseData?.thumbnail}
               alt="Course Thumbnail"
@@ -193,12 +167,10 @@ setIsEnrolled(true)
             /> }
           </div>
 
-          {/* Course Info */}
           <div className="flex-1 space-y-2 mt-[20px]">
             <h1 className="text-2xl font-bold">{selectedCourseData?.title}</h1>
             <p className="text-gray-600">{selectedCourseData?.subTitle}</p>
 
-            {/* Rating & Price */}
             <div className="flex items-start flex-col justify-between">
               <div className="text-yellow-500 font-medium">
                 ⭐ {avgRating} <span className="text-gray-500">(1,200 reviews)</span>
@@ -209,14 +181,11 @@ setIsEnrolled(true)
               </div>
             </div>
 
-            {/* Highlights */}
             <ul className="text-sm text-gray-700 space-y-1 pt-2">
               <li>✅ 10+ hours of video content</li>
               <li>✅ Lifetime access to course materials</li>
-              
             </ul>
 
-            {/* Enroll Button */}
             {!isEnrolled ?<button className="bg-[black] text-white px-6 py-2 rounded hover:bg-gray-700 mt-3" onClick={()=>handleEnroll(courseId , userData._id)}>
               Enroll Now
             </button> :
@@ -227,22 +196,18 @@ setIsEnrolled(true)
           </div>
         </div>
 
-        {/* What You'll Learn */}
         <div>
           <h2 className="text-xl font-semibold mb-2">What You’ll Learn</h2>
           <ul className="list-disc pl-6 text-gray-700 space-y-1">
             <li>Learn {selectedCourseData?.category} from Beginning</li>
-            
           </ul>
         </div>
 
-        {/* Requirements */}
         <div>
           <h2 className="text-xl font-semibold mb-2">Requirements</h2>
           <p className="text-gray-700">Basic programming knowledge is helpful but not required.</p>
         </div>
 
-        {/* Who This Course Is For */}
         <div>
           <h2 className="text-xl font-semibold mb-2">Who This Course is For</h2>
           <p className="text-gray-700">
@@ -250,9 +215,7 @@ setIsEnrolled(true)
           </p>
         </div>
 
-        {/* course lecture   */}
          <div className="flex flex-col md:flex-row gap-6">
-  {/* Left Side - Curriculum */}
   <div className="bg-white w-full md:w-2/5 p-6 rounded-2xl shadow-lg border border-gray-200">
     <h2 className="text-xl font-bold mb-1 text-gray-800">Course Curriculum</h2>
     <p className="text-sm text-gray-500 mb-4">{selectedCourseData?.lectures?.length} Lectures</p>
@@ -288,7 +251,6 @@ setIsEnrolled(true)
     </div>
   </div>
 
-  {/* Right Side - Video + Info */}
   <div className="bg-white w-full md:w-3/5 p-6 rounded-2xl shadow-lg border border-gray-200">
     <div className="aspect-video w-full rounded-lg overflow-hidden mb-4 bg-black flex items-center justify-center">
       {selectedLecture?.videoUrl ? (
@@ -315,10 +277,10 @@ setIsEnrolled(true)
     <div className="mb-4">
       <div className="flex gap-1 mb-2">
         {[1, 2, 3, 4, 5].map((star) => (
-         
+          
             <FaStar  key={star}
             onClick={() => setRating(star)} className={star <= rating ? "fill-yellow-500" : "fill-gray-300"} />
-         
+          
         ))}
       </div>
       <textarea
@@ -336,7 +298,6 @@ setIsEnrolled(true)
       </button>
     </div>
 
-        {/* Instructor Info */}
         <div className="flex items-center gap-4 pt-4 border-t ">
           {creatorData?.photoUrl ?<img
             src={creatorData?.photoUrl}
