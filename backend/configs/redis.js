@@ -1,12 +1,26 @@
 import Redis from "ioredis"
 import "dotenv/config"
 
-const redis = new Redis(process.env.REDIS_URL, {
-    tls: {
-        rejectUnauthorized: false
-    },
+const redisUrl = process.env.REDIS_URL
+
+
+const isSecure = redisUrl.startsWith("rediss://")
+
+const redisConfig = {
     maxRetriesPerRequest: null
-})
+}
+
+
+if (isSecure) {
+    redisConfig.tls = {
+        rejectUnauthorized: false
+    }
+} else {
+    
+    redisConfig.family = 4
+}
+
+const redis = new Redis(redisUrl, redisConfig)
 
 redis.once("connect", () => {
     console.log("Redis Connected Successfully")
