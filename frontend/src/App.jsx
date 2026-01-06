@@ -26,19 +26,29 @@ import ViewLecture from './pages/ViewLecture'
 import SearchWithAi from './pages/SearchWithAi'
 import getAllReviews from './customHooks/getAllReviews'
 
-// Correct Import
 import ResumeAnalyzer from "./pages/ResumeAnalyzer"; 
 
 export const serverUrl = "https://skillvault-backend-s1e0.onrender.com"
 
 function App() {
-  
-  let {userData} = useSelector(state=>state.user)
+  let { userData, loading } = useSelector(state => state.user)
 
   getCurrentUser()
   getCouseData()
   getCreatorCourseData()
   getAllReviews()
+
+  const token = localStorage.getItem('token')
+  const isAuthLoading = !userData && token && loading !== false
+
+  if (isAuthLoading) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <h2>Loading...</h2>
+      </div>
+    )
+  }
+
   return (
     <>
       <ToastContainer />
@@ -52,10 +62,9 @@ function App() {
         <Route path='/viewcourse/:courseId' element={userData?<ViewCourse/>:<Navigate to={"/signup"}/>}/>
         <Route path='/editprofile' element={userData?<EditProfile/>:<Navigate to={"/signup"}/>}/>
         <Route path='/enrolledcourses' element={userData?<EnrolledCourse/>:<Navigate to={"/signup"}/>}/>
-         <Route path='/viewlecture/:courseId' element={userData?<ViewLecture/>:<Navigate to={"/signup"}/>}/>
-         <Route path='/searchwithai' element={userData?<SearchWithAi/>:<Navigate to={"/signup"}/>}/>
+        <Route path='/viewlecture/:courseId' element={userData?<ViewLecture/>:<Navigate to={"/signup"}/>}/>
+        <Route path='/searchwithai' element={userData?<SearchWithAi/>:<Navigate to={"/signup"}/>}/>
         
-        {/* This is where the Resume Page lives */}
         <Route path='/analyze-resume' element={userData?<ResumeAnalyzer user={userData}/>:<Navigate to={"/signup"}/>}/>
         
         <Route path='/dashboard' element={userData?.role === "educator"?<Dashboard/>:<Navigate to={"/signup"}/>}/>
@@ -65,7 +74,7 @@ function App() {
         <Route path='/createlecture/:courseId' element={userData?.role === "educator"?<CreateLecture/>:<Navigate to={"/signup"}/>}/>
         <Route path='/editlecture/:courseId/:lectureId' element={userData?.role === "educator"?<EditLecture/>:<Navigate to={"/signup"}/>}/>
         <Route path='/forgotpassword' element={<ForgotPassword/>}/>
-         </Routes>
+      </Routes>
     </>
   )
 }
