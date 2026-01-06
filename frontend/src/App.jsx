@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import Home from './pages/Home'
 import Login from './pages/Login'
@@ -31,17 +31,29 @@ import ResumeAnalyzer from "./pages/ResumeAnalyzer";
 export const serverUrl = "https://skillvault-backend-s1e0.onrender.com"
 
 function App() {
-  let { userData, loading } = useSelector(state => state.user)
+  let { userData } = useSelector(state => state.user)
 
   getCurrentUser()
   getCouseData()
   getCreatorCourseData()
   getAllReviews()
 
-  const token = localStorage.getItem('token')
-  const isAuthLoading = !userData && token && loading !== false
+  const [initialLoading, setInitialLoading] = useState(!!localStorage.getItem('token'))
 
-  if (isAuthLoading) {
+  useEffect(() => {
+    if (userData) {
+      setInitialLoading(false)
+    }
+  }, [userData])
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setInitialLoading(false)
+    }, 2000)
+    return () => clearTimeout(timer)
+  }, [])
+
+  if (initialLoading && !userData) {
     return (
       <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <h2>Loading...</h2>
