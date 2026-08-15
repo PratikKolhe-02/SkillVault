@@ -17,6 +17,8 @@ import { rateLimit } from "express-rate-limit"
 let port = process.env.PORT || 10000
 let app = express()
 
+app.set('trust proxy', 1)
+
 app.use(compression())
 
 const limiter = rateLimit({
