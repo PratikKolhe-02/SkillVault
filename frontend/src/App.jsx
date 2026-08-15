@@ -36,14 +36,10 @@ function App() {
   getCreatorCourseData()
   getAllReviews()
 
-  const [isLoading, setIsLoading] = useState(!!localStorage.getItem('token'))
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (userData) {
-      setIsLoading(false)
-    } else if (!localStorage.getItem('token')) {
-      setIsLoading(false)
-    }
+    setIsLoading(false)
   }, [userData])
 
   if (isLoading) {
