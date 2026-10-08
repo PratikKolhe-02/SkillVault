@@ -60,6 +60,8 @@ function Login() {
             } catch (error) {
                 console.log(error)
                 toast.error(error.response?.data?.message || "Google Login Failed")
+            }finally {
+                setLoading(false); // Always unlocks state when done
             }
         }
 
